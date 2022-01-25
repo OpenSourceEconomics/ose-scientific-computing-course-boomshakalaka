@@ -8,7 +8,7 @@ In this project we studied the Bayesian Forecasting model in order to predict th
 
 This model mainly considers the large number of state-level opinion surveys as well as information from the historical forecasting models. The end result is a set of data that has an increasing accuracy as the election day approaches. To borrow strength both across state and through the use of random-walk priors, here we employed hierarchical specification. This is done for the purpose of overcoming the limitation that not every state is polled regularly. Moreover, in order to handle the daily tracking of voter preferences towards the presidential candidates, this model sifts through day-to-day variations in the polls caused by sampling error and national campaign effects. We also used simulation techniques to estimate the candidates’ winning chance and thus the winning chance of Electoral College. When this model is applied to 2008 presidential campaign, the victory of Barrack Obama was never, in fact, in doubt.
 
-<a href="https://nbviewer.jupyter.org/github/OpenSourceEconomics/ose-template-course-project/blob/master/example_project.ipynb"
+<a href="https://nbviewer.org/github/OpenSourceEconomics/ose-scientific-computing-course-boomshakalaka/blob/master/project%20notebook.ipynb"
    target="_parent">
    <img align="center"
   src="https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.png"
