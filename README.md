@@ -14,7 +14,7 @@ This model mainly considers the large number of state-level opinion surveys as w
   src="https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.png"
       width="109" height="20">
 </a>
-<a href="https://mybinder.org/v2/gh/OpenSourceEconomics/ose-template-course-project/master?filepath=example_project.ipynb"
+<a href="https://mybinder.org/v2/gh/OpenSourceEconomics/ose-scientific-computing-course-boomshakalaka/blob/master/project%20notebook.ipynb/HEAD"
     target="_parent">
     <img align="center"
        src="https://mybinder.org/badge_logo.svg"
