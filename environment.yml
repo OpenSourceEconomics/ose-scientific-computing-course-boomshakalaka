@@ -9,9 +9,8 @@ dependencies:
 - statsmodels
 - pip
 - us
-- os
-- gc
-- conda install -c conda-forge cmdstanpy 
+- conda-forge::cmdstanpy
+- conda-forge::us
 - basemap
 - pip:
 
