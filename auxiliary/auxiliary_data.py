@@ -105,3 +105,72 @@ def data_preparation(df):
     df.drop_duplicates(['state','t','pollster'], inplace=True)
     return df
 
+
+def adjuster_terms(df):
+    all_polled_states = df["state"].unique()
+    all_polled_states = np.delete(all_polled_states, 0)
+
+    #getting states info from 2012
+    state2012 = pd.read_csv("2012.csv")
+    state2012["score"] = state2012["obama_count"] / (state2012["obama_count"] + state2012["romney_count"])
+    state2012["national score"] = sum(state2012["obama_count"]) / sum(state2012["obama_count"] + state2012["romney_count"])
+    state2012["delta"] = state2012["score"] - state2012["national score"]
+    state2012["share_national_vote"] = (state2012["total_count"] * (1 + state2012["adult_pop_growth_2011_15"]))\
+                                  / sum(state2012["total_count"] * (1 + state2012["adult_pop_growth_2011_15"]))
+    state2012 = state2012.sort_values("state")
+
+    state_abb = state2012["state"]
+    state_name = state2012["state_name"]
+
+    prior_diff_score = pd.DataFrame(state2012["delta"])
+    prior_diff_score.set_index(state_abb, inplace=True)
+
+    state_weights = pd.DataFrame(state2012["share_national_vote"] / sum(state2012["share_national_vote"]))
+    state_weights.set_index(state_abb.sort_values(), inplace=True)
+
+
+    ##creating covariance matrices
+    #preparing data
+    state_data = pd.read_csv("abbr_list.csv")
+    state_data = state_data[["year", "state", "dem"]]
+    state_data = state_data[state_data["year"] == 2016]
+    state_data.rename(columns={"year": "variable", "dem": "value"}, inplace=True)
+    state_data= state_data[["state", "variable", "value"]]
+
+    census = pd.read_csv("acs_2013_variables.csv")
+    census.dropna(inplace=True)
+    census.drop(columns=["state_fips", "pop_total", "pop_density"], inplace=True)
+    census = census.melt(id_vars="state")
+
+    state_data = state_data.append(census)
+
+    #adding urbanicity
+    urbanicity = pd.read_csv("urbanicity_index.csv")
+    urbanicity.rename(columns={"average_log_pop_within_5_miles": "pop_density"}, inplace=True)
+    urbanicity = urbanicity[["state", "pop_density"]]
+    urbanicity = urbanicity.melt(id_vars="state")
+
+    state_data = state_data.append(urbanicity)
+
+    #adding white evangelical
+    white_pct = pd.read_csv("white_evangel_pct.csv")
+    white_pct = white_pct.melt(id_vars="state")
+
+    state_data = state_data.append(white_pct)
+
+    #adding regions as dummy
+    regions = pd.read_csv("state_region_crosswalk.csv")
+    regions.rename(columns={"state_abb": "state", "region": "variable"}, inplace=True)
+    regions["value"] = 1
+    regions = regions[["state", "variable", "value"]]
+    regions = regions.pivot_table(index="state", columns="variable", values="value", fill_value=0).reset_index("state")
+    regions = regions.melt(id_vars="state")
+
+    #spread the data
+    state_data_long = state_data.copy()
+    state_data_long["value"] = state_data_long.groupby("variable")["value"].transform(lambda x: (x-x.min())/(x.max()-x.min()))
+    state_data_long = state_data_long.pivot_table(index="variable", columns="state", values="value").reset_index("variable")
+    state_data_long.drop(columns=["variable"], inplace=True)
+
+    return df
+
