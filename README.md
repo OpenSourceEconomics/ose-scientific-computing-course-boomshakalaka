@@ -20,3 +20,12 @@ This model mainly considers the large number of state-level opinion surveys as w
        src="https://mybinder.org/badge_logo.svg"
        width="109" height="20">
 </a>
+## Reproducibility
+
+We set up Continuous Integration Workflow and share an environment.yml file to ensure full reproducibility of our project.
+
+![Continuous Integration](https://github.com/OpenSourceEconomics/ose-template-course-project/workflows/Continuous%20Integration/badge.svg)
+
+## Acknowledgement
+
+We want to thank Morris, Kremp and Huffingtonpost. This replication project could only be conducted because they provide their data and their R and STAN codes for most of the results. 
