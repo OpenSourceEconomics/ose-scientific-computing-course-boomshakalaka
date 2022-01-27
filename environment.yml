@@ -5,10 +5,14 @@ dependencies:
 - pandas
 - jupyterlab
 - matplotlib
-- seaborn
 - scipy
 - statsmodels
 - pip
+- us
+- os
+- gc
+- cmdstanpy
+- basemap
 - pip:
 
 
