@@ -1,4 +1,4 @@
-# OSE data science project template
+# Dynamic Bayesian Forecasting of Presidential Elections in the States (Linzer, 2013)
 
 This is the replication project of OSE Scientific Computing for Economists in Winter Semester 2021/2022 by [Başak Çelebi](https://github.com/Basakclb), [Gözde Özden](https://github.com/ozdengo)
 
