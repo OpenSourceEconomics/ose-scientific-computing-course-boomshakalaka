@@ -1,4 +1,4 @@
-name: student_project
+name: project notebook
 
 dependencies:
 - numpy
@@ -11,7 +11,7 @@ dependencies:
 - us
 - os
 - gc
-- cmdstanpy
+- conda install -c conda-forge cmdstanpy 
 - basemap
 - pip:
 
