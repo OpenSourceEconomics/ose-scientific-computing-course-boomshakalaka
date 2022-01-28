@@ -24,7 +24,7 @@ def data_preparation(df):
     election_day = pd.to_datetime("2016-11-08")
     start_date = pd.to_datetime("2016-03-01")
     df.rename(columns={"number.of.observations": "n"}, inplace=True)
-    df.rename(columns={"start.date": "start"}, inplace=True)
+    df = df.rename(columns={"start.date": "start"})
     df.rename(columns={"end.date": "end"}, inplace=True)
     df["start"] = pd.to_datetime(df["start"], format="%Y-%m-%d")
     df["end"] = pd.to_datetime(df["end"], format="%Y-%m-%d")
