@@ -10,7 +10,7 @@ from statsmodels.formula.api import ols
 from cmdstanpy import CmdStanModel
 import matplotlib.pyplot as plt
 
-os.chdir("/home/admin/gözdeproject/")
+#os.chdir("/home/admin/gözdeproject/")
 class ELECTION_2016:
 
     def __init__(self):
