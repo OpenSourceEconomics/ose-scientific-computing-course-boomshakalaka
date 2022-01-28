@@ -671,7 +671,7 @@ class ELECTION_2016:
                           projection='lcc', lat_1=33, lat_2=45, lon_0=-95)
 
             # load the shapefile, use the name 'states'
-            map.readshapefile('/home/admin/Downloads/st99_d00', name='states', drawbounds=True)
+            map.readshapefile('data/st99_d00', name='states', drawbounds=True)
 
             # collect the state names from the shapefile attributes so we can
             # look up the shape obect for a state by it's name
