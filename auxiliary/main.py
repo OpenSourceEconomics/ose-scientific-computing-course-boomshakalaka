@@ -10,13 +10,10 @@ from statsmodels.formula.api import ols
 from cmdstanpy import CmdStanModel
 import matplotlib.pyplot as plt
 
-#os.chdir("/home/admin/gözdeproject/")
+os.chdir("/Users/gozdeozden/Desktop/ose-scientific-computing-course-boomshakalaka/")
 class ELECTION_2016:
 
     def __init__(self):
-
-        self.state_name = [state.name for state in us.states.STATES_CONTIGUOUS]
-        state_dict = {x.abbr: x.name for x in us.states.STATES_CONTIGUOUS}
 
         "CONSTANTS"
         lambda_ = 0.75
@@ -39,6 +36,7 @@ class ELECTION_2016:
 
         # getting states info from 2012
         state2012 = pd.read_csv("data/2012.csv")
+        self.state_name = state2012["state_name"].values.tolist()
         state2012["score"] = state2012["obama_count"] / (state2012["obama_count"] + state2012["romney_count"])
         state2012["national score"] = sum(state2012["obama_count"]) / sum(state2012["obama_count"] + state2012["romney_count"])
         state2012["delta"] = state2012["score"] - state2012["national score"]
