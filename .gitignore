@@ -2,4 +2,5 @@ __pxcache__/
 *.pyc
 .idea/
 .ipynb_checkpoints/
-*.html
+*.html.DS_Store
+.envrc
