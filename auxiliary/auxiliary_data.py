@@ -6,7 +6,7 @@ from datetime import timedelta
 
 
 def data_preparation(df):
-    df.drop(columns=["pollster.url", "source.url", "question.text", "question.iteration", "entry.date.time..et.", "partisan", "affiliation", "Unnamed: 0"], inplace=True)
+    #df.drop(columns=["pollster.url", "source.url", "question.text", "question.iteration", "entry.date.time..et.", "partisan", "affiliation", "Unnamed: 0"], inplace=True)
 
     # #adding states to the df
     # for state in state_name:
