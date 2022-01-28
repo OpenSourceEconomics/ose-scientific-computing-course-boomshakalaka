@@ -12,6 +12,7 @@ dependencies:
 - conda-forge::cmdstanpy
 - conda-forge::us
 - basemap
+- conda-forge::mpl_toolkits
 - pip:
 
 

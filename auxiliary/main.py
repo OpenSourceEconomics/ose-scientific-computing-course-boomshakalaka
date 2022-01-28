@@ -10,7 +10,9 @@ from statsmodels.formula.api import ols
 from cmdstanpy import CmdStanModel
 import matplotlib.pyplot as plt
 
-#os.chdir("/Users/gozdeozden/Desktop/ose-scientific-computing-course-boomshakalaka/")
+# os.chdir("/home/admin/gözdeproject/")
+
+
 class ELECTION_2016:
 
     def __init__(self):
@@ -38,7 +40,8 @@ class ELECTION_2016:
         state2012 = pd.read_csv("data/2012.csv")
         self.state_name = state2012["state_name"].values.tolist()
         state2012["score"] = state2012["obama_count"] / (state2012["obama_count"] + state2012["romney_count"])
-        state2012["national score"] = sum(state2012["obama_count"]) / sum(state2012["obama_count"] + state2012["romney_count"])
+        state2012["national score"] = sum(state2012["obama_count"]) / sum(
+            state2012["obama_count"] + state2012["romney_count"])
         state2012["delta"] = state2012["score"] - state2012["national score"]
         state2012["share_national_vote"] = (state2012["total_count"] * (1 + state2012["adult_pop_growth_2011_15"])) \
                                            / sum(state2012["total_count"] * (1 + state2012["adult_pop_growth_2011_15"]))
@@ -80,7 +83,8 @@ class ELECTION_2016:
         state_data_long = state_data.copy()
         state_data_long["value"] = state_data_long.groupby("variable")["value"].transform(
             lambda x: (x - x.min()) / (x.max() - x.min()))
-        state_data_long = state_data_long.pivot_table(index="variable", columns="state", values="value").reset_index("variable")
+        state_data_long = state_data_long.pivot_table(index="variable", columns="state", values="value").reset_index(
+            "variable")
         state_data_long.drop(columns=["variable"], inplace=True)
 
         # creting and computing correlation matrix
@@ -223,7 +227,7 @@ class ELECTION_2016:
         return_ = (sigma2 ** .5 * nn) @ m @ (sigma2 ** .5 * nn)
         return return_
 
-    def nearestPD(self,A):
+    def nearestPD(self, A):
         """Find the nearest positive-definite matrix to input
 
         A Python/Numpy port of John D'Errico's `nearestSPD` MATLAB code [1], which
@@ -292,8 +296,9 @@ class ELECTION_2016:
         df["end"] = pd.to_datetime(df["end"], format="%Y-%m-%d")
         df["t"] = df["end"] - ((timedelta(days=1) + (df["end"] - df["start"])) / 2).dt.ceil("d")
         df = df[
-            (df["t"] >= self.start_date) & ((df["population"] == "Likely Voters") | (df["population"] == "Registered Voters")
-                                       | (df["population"] == "Adults")) & (df["n"] > 1)]
+            (df["t"] >= self.start_date) & (
+                        (df["population"] == "Likely Voters") | (df["population"] == "Registered Voters")
+                        | (df["population"] == "Adults")) & (df["n"] > 1)]
 
         # pollster arrangements
         characters = "'!^-%&/()=?_.,<$>£#½§{[]}\}|;`"
@@ -419,20 +424,22 @@ class ELECTION_2016:
         ###########################
         #          MU_b
         ###########################
+        y = np.random.multivariate_normal(size=1000, mean=self.mu_b_prior.values.squeeze(),
+                                          cov=self.state_covariance_mu_b_T)
+        mu_b_T_posterior_draw = out[[x for x in out.columns if "mu_b[" in x and "raw" not in x and "252" in x]]
+        mu_b_T_prior_draws = self.mean_low_high(y, self.state_name, "prior")
+        mu_b_T_posterior_draws = self.mean_low_high(mu_b_T_posterior_draw, self.state_name, "posterior")
+        mu_b_T = mu_b_T_prior_draws.append(mu_b_T_posterior_draws)
+        mu_b_T = mu_b_T.sort_values(by=["mean", "state"])
+
+        self.groups = mu_b_T.groupby("type")
+
         if plot_type == "mu_b":
-            y = np.random.multivariate_normal(size=1000, mean=self.mu_b_prior.values.squeeze(), cov=self.state_covariance_mu_b_T)
-            mu_b_T_posterior_draw = out[[x for x in out.columns if "mu_b[" in x and "raw" not in x and "252" in x]]
-            mu_b_T_prior_draws = self.mean_low_high(y, self.state_name, "prior")
-            mu_b_T_posterior_draws = self.mean_low_high(mu_b_T_posterior_draw, self.state_name, "posterior")
-            mu_b_T = mu_b_T_prior_draws.append(mu_b_T_posterior_draws)
-            mu_b_T = mu_b_T.sort_values(by=["mean", "state"])
-
-            groups = mu_b_T.groupby("type")
-
             plt.figure(figsize=(8, 12))
-            for label, group in groups:
+            for label, group in self.groups:
                 err = group["high"] - group["low"]
-                plt.errorbar(x=group["mean"], y=group["state"], xerr=err, label=label, fmt="o")
+                alpha = 0.6 if label == "prior" else 1
+                plt.errorbar(x=group["mean"], y=group["state"], xerr=err, label=label, fmt="o", alpha=alpha)
             plt.xlabel("Mean")
             plt.axvline(0.5, linestyle="--")
             plt.xlim(0, 1)
@@ -448,13 +455,15 @@ class ELECTION_2016:
             mu_c_cols = [x for x in out.columns.values if "mu_c" in x and "raw" not in x]
             mu_c_posterior_draw = out[mu_c_cols].copy()
 
-            pollster_ = self.df[["pollster", "index_p"]].drop_duplicates().sort_values(by="pollster").values.tolist() * 3000
+            pollster_ = self.df[["pollster", "index_p"]].drop_duplicates().sort_values(
+                by="pollster").values.tolist() * 3000
             pollster = [x[0] for x in pollster_]
             mu_c_posterior_draws = pd.DataFrame({"draws": mu_c_posterior_draw.__array__().reshape(3000 * 162),
                                                  "index_p": list(range(1, 163)) * 3000,
                                                  "pollster": pollster,
                                                  "type": "posterior"})
-            pollster_ = self.df[["pollster", "index_p"]].sort_values(by="pollster").drop_duplicates().values.tolist() * 1000
+            pollster_ = self.df[["pollster", "index_p"]].sort_values(
+                by="pollster").drop_duplicates().values.tolist() * 1000
             pollster = [x[0] for x in pollster_]
             mu_c_prior_draws = pd.DataFrame({"draws": np.random.normal(0, self.sigma_c, self.P * 1000),
                                              "index_p": list(range(1, 163)) * 1000,
@@ -535,7 +544,8 @@ class ELECTION_2016:
             method = self.df[["polltype", "index_pop"]].drop_duplicates().values.tolist() * 3000
             method = [x[0] for x in method]
             mu_pop_posterior_draws = pd.DataFrame({"draws": mu_pop_posterior_draws.__array__().reshape(3000 * 3, ),
-                                                   "index_pop": list(range(1, self.M + 1)) * mu_pop_posterior_draws.shape[0],
+                                                   "index_pop": list(range(1, self.M + 1)) *
+                                                                mu_pop_posterior_draws.shape[0],
                                                    "type": "posterior",
                                                    "method": method})
 
@@ -609,11 +619,12 @@ class ELECTION_2016:
             predicted_score = out[[x for x in out.columns.values if "predicted_score[" in x and "raw" not in x]]
             single_draw = predicted_score[[x for x in predicted_score.columns.values if "252" in x]]
 
-            t_list = [(self.df.start.min().to_pydatetime() + timedelta(days=x)).strftime("%Y-%m-%d") for x in range(1, 253)]
+            t_list = [(self.df.start.min().to_pydatetime() + timedelta(days=x)).strftime("%Y-%m-%d") for x in
+                      range(1, 253)]
             pct_clinton = pd.DataFrame({"low": predicted_score.quantile(0.025, axis=0).values,
                                         "high": predicted_score.quantile(0.975, axis=0).values,
                                         "mean": predicted_score.mean(axis=0).values,
-                                        "prob": predicted_score[predicted_score > 0.5].mean(axis=0).fillna(0).values,
+                                        "prob": (predicted_score[predicted_score > 0.5].count(axis=0) / 3000).values,
                                         "state": np.sort(self.state_name * 252),
                                         "t": t_list * 51})
 
@@ -643,7 +654,6 @@ class ELECTION_2016:
             v2 = self.df[["state", "t", "pct_clinton", "mode"]]  # .loc[df["state"] == "--"]
             v2["t"] = v2["t"].dt.strftime("%Y-%m-%d")
             v2 = v2.set_index(v2["t"])
-            v2.index = v2.index.strftime("%Y-%m-%d")
 
             pct_all_plt = pd.concat([v1, v2])
             pct_all_plt = pct_all_plt.fillna(method='ffill').sort_index()
@@ -652,12 +662,10 @@ class ELECTION_2016:
 
             plt_clinton = pct_all.loc[pct_all["t"] == "2016-11-08"][["state", "prob"]].reset_index(drop=True)
 
-            import matplotlib.pyplot as plt
             from mpl_toolkits.basemap import Basemap
             from matplotlib.patches import Polygon
             from matplotlib.collections import PatchCollection
 
-            st_list = set([x["NAME"] for x in map.states_info])
             # create the map
             map = Basemap(llcrnrlon=-119, llcrnrlat=22, urcrnrlon=-64, urcrnrlat=49,
                           projection='lcc', lat_1=33, lat_2=45, lon_0=-95)
@@ -682,7 +690,7 @@ class ELECTION_2016:
             for i in plt_clinton["state"]:
                 if "--" != i:
                     seg = map.states[state_names.index(i)]
-                    poly = Polygon(seg, facecolor=colors(prob_colors[a]), edgecolor='red')
+                    poly = Polygon(seg, facecolor=colors(prob_colors[a]), edgecolor='black')
                     ax.add_patch(poly)
                     cl.append(colors(a * 5))
                     pt.append(poly)
@@ -691,6 +699,8 @@ class ELECTION_2016:
             p = PatchCollection(pt, cmap=colors)
             p.set_array(np.array(cl))
             cb = plt.colorbar(p)
+            plt.title("Probability of Clinton Wins")
+            plt.box(False)
             plt.show()
             return
 
@@ -699,17 +709,17 @@ class ELECTION_2016:
         ###########################
         if plot_type == "states":
             predicted_score = out[[x for x in out.columns.values if "predicted_score[" in x and "raw" not in x]]
-            single_draw = predicted_score[[x for x in predicted_score.columns.values if "252" in x]]
 
-            t_list = [(self.df.start.min().to_pydatetime() + timedelta(days=x)).strftime("%Y-%m-%d") for x in range(1, 253)]
+            t_list = [(self.df.start.min().to_pydatetime() + timedelta(days=x)).strftime("%Y-%m-%d") for x in
+                      range(1, 253)]
             pct_clinton = pd.DataFrame({"low": predicted_score.quantile(0.025, axis=0).values,
                                         "high": predicted_score.quantile(0.975, axis=0).values,
                                         "mean": predicted_score.mean(axis=0).values,
-                                        "prob": predicted_score[predicted_score > 0.5].mean(axis=0).fillna(0).values,
+                                        "prob": (predicted_score[predicted_score > 0.5].count(axis=0) / 3000).values,
                                         "state": np.sort(self.state_name * 252),
                                         "t": t_list * 51})
 
-            nat = predicted_score.to_numpy().reshape(3000, 252, 51)
+            nat = predicted_score.to_numpy().reshape(3000, 252, 51, order="F")
             nat_ = np.average(nat, axis=2, weights=self.state_weights.squeeze()).flatten()
             pct_clinton_natl = pd.DataFrame({"natl_vote": nat_,
                                              "t": t_list * 3000,
@@ -726,35 +736,46 @@ class ELECTION_2016:
                                              "prob": l,
                                              "state": "--",
                                              "t": t_list})
+            plt.figure(figsize=(20, 8))
+            plt.fill_between(pct_clinton_natl.index, pct_clinton_natl["low"], pct_clinton_natl["high"], alpha=0.3,
+                             color="gray")
+            plt.plot(pct_clinton_natl.index, pct_clinton_natl["mean"])
+            plt.box(False)
+            plt.xticks(list(range(0, 252, 30)), ["M", "A", "M", "J", "J", "A", "S", "O", "N"])
+            plt.title("National")
+            plt.tight_layout()
+            plt.show()
+            plt.close()
 
             pct_all = pct_clinton.append(pct_clinton_natl).fillna(0).reset_index(drop=True)
-
             v1 = pct_all.loc[pct_all["state"] != "--"]
             v1 = v1.set_index(v1["t"])
 
-            groups = v1.groupby("state")
-            names = self.state_name
-            state_all = {x: self.state_abb.values.tolist()[i] for i, x in enumerate(names)}
+            state_all = {x: self.state_abb.values.tolist()[i] for i, x in enumerate(self.state_name)}
+            ls_state = np.array(self.state_name)[self.groups.groups["posterior"]][::-1]
             ix = 0
-            plt.figure(figsize=(8, 20))
-            plt.subplots(2, 5)
-            for key, value in groups:
+            for key in ls_state:
                 if "District" in key:
                     continue
-                if (ix % 10 == 0 and ix != 0) or ix == 49:
-                    plt.show()
+                value = v1.loc[v1.state == key]
+                if ix % 10 == 0:
                     ix = 0
-                    plt.figure(figsize=(8, 20))
+                    plt.figure(figsize=(20, 8))
                     plt.subplots(2, 5, sharex=True, sharey=True)
 
                 plt.subplot(2, 5, (ix + 1))
                 plt.fill_between(value.index, value["low"], value["high"], alpha=0.3, color="gray")
                 plt.plot(value.index, value["mean"])
-                plt.axhline(self.inv_logit(self.mu_b_prior.values[self.state_name.index(key)]), linestyle="--", color="black")
+                plt.axhline(self.inv_logit(self.mu_b_prior.values[self.state_name.index(key)]), linestyle="--",
+                            color="black")
                 plt.box(False)
                 plt.xticks(list(range(0, 252, 30)), ["M", "A", "M", "J", "J", "A", "S", "O", "N"])
                 plt.title(state_all[key])
                 plt.tight_layout()
 
                 ix += 1
+                if ix % 10 == 0:
+                    plt.show()
+                    plt.close()
+
             return
